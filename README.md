@@ -8,6 +8,7 @@ Kibana(ELK) 앞단에 두는 **로그인 게이트웨이**입니다.
 
 > ✅ **Keycloak + Spring 게이트웨이 구성은 [`auth-stack/`](auth-stack/README.md) 에 있습니다.** 아래 Node 게이트웨이는 이전 방식(참고용)입니다.
 >
+> 📘 기술스택 가이드 (기능·설정·사용법): [docs/tech-stack-guide.md](docs/tech-stack-guide.md)
 > 📄 구조 검토 문서: [docs/architecture-review.md](docs/architecture-review.md)
 
 ## 동작 흐름
