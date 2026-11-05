@@ -1,15 +1,16 @@
-# A안: Keycloak + PostgreSQL + oauth2-proxy + Redis + HAProxy  (앞단 로그인 → Kibana)
+# Keycloak + PostgreSQL + Spring 게이트웨이(gateway/) + Redis + HAProxy  (앞단 로그인 → Kibana)
 #
 #   브라우저 ─▶ HAProxy(:PUBLIC_PORT)
 #                ├─ /auth/**   ─▶ Keycloak ─▶ PostgreSQL
-#                └─ 그 외      ─▶ oauth2-proxy ─(세션: Redis)─▶ Kibana
+#                └─ 그 외      ─▶ gateway(Spring) ─(세션: Redis)─▶ Kibana
 #
 # 로컬 테스트 (HAProxy, Mock Kibana 포함):
-#   cp .env.example .env && docker compose --profile local up -d
+#   (cd gateway && mvn -DskipTests package)      ← 게이트웨이 jar 빌드
+#   cp .env.example .env && docker compose --profile local up -d --build
 #   http://localhost:8000/kibana/app/discover  (테스트 계정 admin / admin123)
 #
 # 운영 (사내에 이미 있는 HAProxy 사용):
-#   docker compose up -d     ← keycloak, postgres, oauth2-proxy, redis 만 기동
+#   docker compose up -d --build     ← keycloak, postgres, gateway, redis 만 기동
 #   기존 HAProxy 에는 haproxy/existing-haproxy-snippet.cfg 내용만 추가
 
 services:
@@ -25,7 +26,7 @@ services:
       - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
       - keycloak
-      - oauth2-proxy
+      - gateway
     restart: unless-stopped
 
   keycloak:
@@ -41,7 +42,7 @@ services:
       KC_DB_PASSWORD: ${KC_DB_PASSWORD}
       # 브라우저가 보는 주소. 토큰의 issuer 도 이 주소가 됨
       KC_HOSTNAME: ${PUBLIC_URL}/auth
-      # oauth2-proxy 가 컨테이너 내부 주소(keycloak:8080)로 토큰을 받을 수 있게 허용
+      # 게이트웨이가 컨테이너 내부 주소(keycloak:8080)로 토큰을 받을 수 있게 허용
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
       KC_HTTP_RELATIVE_PATH: /auth
       # TLS 는 HAProxy 에서 처리 (TODO: 내부망에서 HAProxy 에 인증서 적용)
@@ -52,7 +53,7 @@ services:
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       # keycloak/realm-kibana.json 안의 ${...} 값 치환용
       PUBLIC_URL: ${PUBLIC_URL}
-      OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
+      GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET}
     volumes:
       - ./keycloak/realm-kibana.json:/opt/keycloak/data/import/realm-kibana.json:ro
     depends_on:
@@ -75,23 +76,19 @@ services:
       retries: 20
     restart: unless-stopped
 
-  oauth2-proxy:
-    image: quay.io/oauth2-proxy/oauth2-proxy:v7.7.1
-    command: ["--config=/etc/oauth2-proxy/oauth2-proxy.cfg"]
+  # Spring Boot 게이트웨이 (gateway/ 폴더, IntelliJ 로 열어서 수정)
+  gateway:
+    build: ./gateway
     ports:
       # 기존 HAProxy 가 접근하는 포트. TODO: 방화벽으로 HAProxy 서버에서만 접근 허용
-      - "4180:4180"
+      - "8081:8081"
     environment:
-      # 주소가 들어가는 값과 비밀값은 .env 기준으로 여기서 지정 (나머지는 oauth2-proxy.cfg)
-      OAUTH2_PROXY_REDIRECT_URL: ${PUBLIC_URL}/oauth2/callback
-      OAUTH2_PROXY_OIDC_ISSUER_URL: ${PUBLIC_URL}/auth/realms/kibana
-      OAUTH2_PROXY_LOGIN_URL: ${PUBLIC_URL}/auth/realms/kibana/protocol/openid-connect/auth
-      OAUTH2_PROXY_CLIENT_SECRET: ${OAUTH2_PROXY_CLIENT_SECRET}
-      OAUTH2_PROXY_COOKIE_SECRET: ${OAUTH2_PROXY_COOKIE_SECRET}
-      OAUTH2_PROXY_COOKIE_SECURE: ${OAUTH2_PROXY_COOKIE_SECURE}
-      OAUTH2_PROXY_UPSTREAMS: ${KIBANA_UPSTREAM}
-    volumes:
-      - ./oauth2-proxy/oauth2-proxy.cfg:/etc/oauth2-proxy/oauth2-proxy.cfg:ro
+      KEYCLOAK_REALM_URL: ${PUBLIC_URL}/auth/realms/kibana
+      KEYCLOAK_INTERNAL_REALM_URL: http://keycloak:8080/auth/realms/kibana
+      GATEWAY_CLIENT_SECRET: ${GATEWAY_CLIENT_SECRET}
+      KIBANA_URL: ${KIBANA_URL}
+      COOKIE_SECURE: ${COOKIE_SECURE}
+      REDIS_HOST: redis
     depends_on:
       - keycloak
       - redis
@@ -102,7 +99,7 @@ services:
     command: ["redis-server", "--save", "", "--appendonly", "no"]
     restart: unless-stopped
 
-  # 임시 Kibana (로컬 테스트용, 운영에서는 안 뜸). TODO: 운영은 .env 의 KIBANA_UPSTREAM 을 실제 Kibana 로 변경
+  # 임시 Kibana (로컬 테스트용, 운영에서는 안 뜸). TODO: 운영은 .env 의 KIBANA_URL 을 실제 Kibana 로 변경
   mock-kibana:
     profiles: ["local"]
     image: node:20-alpine

@@ -6,7 +6,7 @@ Kibana(ELK) 앞단에 두는 **로그인 게이트웨이**입니다.
 현재는 내부망 이전 전 **뼈대** 단계입니다. DB 와 Kibana 는 임시(Mock)로 연결되어 있고,
 내부망에서 수정할 곳은 모두 `TODO` 로 표시해 두었습니다. (`grep -rn TODO --exclude-dir=node_modules .`)
 
-> ✅ **A안(Keycloak + oauth2-proxy) 구성은 [`auth-stack/`](auth-stack/README.md) 에 있습니다.** 아래 Node 게이트웨이는 이전 방식(참고용)입니다.
+> ✅ **Keycloak + Spring 게이트웨이 구성은 [`auth-stack/`](auth-stack/README.md) 에 있습니다.** 아래 Node 게이트웨이는 이전 방식(참고용)입니다.
 >
 > 📄 구조 검토 문서: [docs/architecture-review.md](docs/architecture-review.md)
 
