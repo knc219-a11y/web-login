@@ -204,6 +204,8 @@ Keycloak 전용 DB 입니다. 사용자, 비밀번호 해시, 그룹, OTP 시크
 Keycloak 쪽 콜백 주소는 Spring 기본값인 `${PUBLIC_URL}/login/oauth2/code/keycloak` 입니다 (`realm-kibana.json` 의 `redirectUris` 에 등록됨).
 
 ### IntelliJ 에서 실행·디버깅
+> 아래 절차는 설정 파일 기준으로 정리한 것이며, 클라우드 검증은 Docker Compose 전체 실행으로만 했습니다. IDE 단독 실행은 아직 직접 확인하지 않았으니 막히는 부분이 있으면 알려 주세요.
+
 1. File → Open → `auth-stack/gateway/pom.xml` → Open as Project (JDK 17 지정)
 2. Keycloak/Redis 는 Docker 로 띄워 둠: `auth-stack/` 에서 `docker compose --profile local up -d` 후 `docker compose stop gateway` (HAProxy 는 계속 게이트웨이를 `gateway:8081` 로 찾으므로, 로컬 IDE 실행 시에는 브라우저로 `http://localhost:8081/kibana/app/home` 에 직접 접속)
 3. Redis 를 IDE 에서 쓰려면 compose 의 `redis` 에 `ports: ["6379:6379"]` 를 추가
