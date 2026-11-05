@@ -23,20 +23,20 @@
   ],
   "clients": [
     {
-      "clientId": "kibana-gateway",
-      "name": "Kibana 게이트웨이",
+      "clientId": "oauth2-proxy",
+      "name": "Kibana (oauth2-proxy)",
       "enabled": true,
       "protocol": "openid-connect",
       "publicClient": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "${GATEWAY_CLIENT_SECRET}",
+      "secret": "${OAUTH2_PROXY_CLIENT_SECRET}",
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "implicitFlowEnabled": false,
       "serviceAccountsEnabled": false,
       "rootUrl": "${PUBLIC_URL}",
       "baseUrl": "/kibana/app/home",
-      "redirectUris": ["${PUBLIC_URL}/login/oauth2/code/keycloak"],
+      "redirectUris": ["${PUBLIC_URL}/oauth2/callback"],
       "webOrigins": ["${PUBLIC_URL}"],
       "attributes": {
         "pkce.code.challenge.method": "S256",
@@ -44,11 +44,11 @@
       },
       "protocolMappers": [
         {
-          "name": "audience-kibana-gateway",
+          "name": "audience-oauth2-proxy",
           "protocol": "openid-connect",
           "protocolMapper": "oidc-audience-mapper",
           "config": {
-            "included.client.audience": "kibana-gateway",
+            "included.client.audience": "oauth2-proxy",
             "id.token.claim": "true",
             "access.token.claim": "true"
           }
