@@ -2,6 +2,7 @@
 
 > 작성일: 2026-11-05 · 상태: **A안으로 결정 (2026-11-05)** → 구현: [`auth-stack/`](../auth-stack/README.md)
 > HAProxy 는 사내에 이미 있어 설정 조각만 추가합니다 (`auth-stack/haproxy/existing-haproxy-snippet.cfg`).
+> 참고: B안(Spring 게이트웨이)도 한 번 구현해 검증했지만(PR #4 의 c7d397b) 최종적으로 A안으로 되돌렸습니다. 필요하면 그 커밋에서 다시 가져올 수 있습니다.
 
 ## 1. 결론 먼저
 
