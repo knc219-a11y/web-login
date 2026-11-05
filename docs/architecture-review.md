@@ -1,7 +1,7 @@
 # 로그인 구조 검토: Keycloak + oauth2-proxy + Redis + HAProxy vs 현재 방식 vs Spring
 
-> 작성일: 2026-11-05 · 상태: **검토용 (아직 구현하지 않음)**
-> 이 문서를 보고 방향을 정한 뒤 다음 작업을 진행합니다.
+> 작성일: 2026-11-05 · 상태: **A안으로 결정 (2026-11-05)** → 구현: [`auth-stack/`](../auth-stack/README.md)
+> HAProxy 는 사내에 이미 있어 설정 조각만 추가합니다 (`auth-stack/haproxy/existing-haproxy-snippet.cfg`).
 
 ## 1. 결론 먼저
 
