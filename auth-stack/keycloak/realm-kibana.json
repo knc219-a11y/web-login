@@ -1,0 +1,93 @@
+{
+  "realm": "kibana",
+  "displayName": "Kibana 로그인",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "bruteForceProtected": true,
+  "failureFactor": 5,
+  "waitIncrementSeconds": 300,
+  "maxFailureWaitSeconds": 900,
+  "passwordPolicy": "length(8) and notUsername",
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 36000,
+  "internationalizationEnabled": true,
+  "supportedLocales": ["ko", "en"],
+  "defaultLocale": "ko",
+  "groups": [
+    { "name": "kibana-users" },
+    { "name": "kibana-admins" }
+  ],
+  "clients": [
+    {
+      "clientId": "kibana-gateway",
+      "name": "Kibana 게이트웨이",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${GATEWAY_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "rootUrl": "${PUBLIC_URL}",
+      "baseUrl": "/kibana/app/home",
+      "redirectUris": ["${PUBLIC_URL}/login/oauth2/code/keycloak"],
+      "webOrigins": ["${PUBLIC_URL}"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${PUBLIC_URL}/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-kibana-gateway",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "kibana-gateway",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        },
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "config": {
+            "claim.name": "groups",
+            "full.path": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@example.local",
+      "firstName": "관리자",
+      "lastName": "테스트",
+      "enabled": true,
+      "emailVerified": true,
+      "groups": ["/kibana-admins", "/kibana-users"],
+      "credentials": [{ "type": "password", "value": "admin123", "temporary": false }]
+    },
+    {
+      "username": "user",
+      "email": "user@example.local",
+      "firstName": "사용자",
+      "lastName": "테스트",
+      "enabled": true,
+      "emailVerified": true,
+      "groups": ["/kibana-users"],
+      "credentials": [{ "type": "password", "value": "user1234", "temporary": false }]
+    }
+  ]
+}
